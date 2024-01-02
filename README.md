@@ -1,4 +1,4 @@
-# Extension for retrieving data fro audd.io
+# Extension for retrieving data from audd.io
 
 Audd.io is a commercial service which recognizes songs based on parts
 of the audio file. This extensions extracts a couple of seconds from
