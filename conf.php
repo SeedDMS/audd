@@ -22,6 +22,15 @@ $EXT_CONF['audd'] = array(
 			'help'=>'Number of seconds extracted from mp3 file and send to Audd.io',
 			'type'=>'number',
 		),
+		'countries' => array(
+			'title'=>'Countries',
+			'help'=>'List only albums published in this countries',
+			'type'=>'select',
+			'options' => ['DE'=>'Germany','US'=>'USA', 'GB'=>'Great Britain', 'JP'=>'Japan', 'XE'=>'Europe'],
+			'multiple' => true,
+			'allow_empty' => true,
+			'size' => 1,
+		),
 	),
 	'constraints' => array(
 		'depends' => array('php' => '5.6.40-', 'seeddms' => ['5.1.24-5.1.99', '6.0.17-6.0.99']),
