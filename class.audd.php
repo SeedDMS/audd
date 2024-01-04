@@ -312,6 +312,13 @@ class SeedDMS_ExtAudd_InitConversion { /* {{{ */
 
 class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 
+	private static function time2sec($l) { /* {{{ */
+		$l = round($l/1000);
+		$m = (int) ($l/60);
+		$s = (int) ($l%60);
+		return $m.':'.$s;
+	} /* }}} */
+
 	/**
 	 * Hook for additional document previews
 	 */
@@ -385,15 +392,24 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 					$txt .= "<img src=\"".$data['result']['spotify']['album']['images'][0]['url']."\">";
 				}
 				if(isset($data['result']['musicbrainz'])) {
+					$countries = explode(',', $settings->_extensions['audd']['countries']);
 					$txt .= "<table class=\"table table-sm table-condensed\">";
 					foreach($data['result']['musicbrainz'] as $item) {
 						foreach($item['releases'] as $rel) {
-							$txt .= "<tr>";
-							$txt .= "<td>".$rel['title']."</td>";
-	//						$txt .= "<td>".$rel['track-count']."</td>";
-							$txt .= "<td>".$rel['date']."</td>";
-							$txt .= "</tr>";
-
+							if($countries && (empty($rel['country']) || in_array($rel['country'], $countries))) {
+								$m = '';
+								if(!empty($rel['media'])) {
+									foreach($rel['media'] as $media)
+										if(!empty($media['track']))
+											$m = $media['format'].' ('.$media['position'].'), Track '.$media['track'][0]['number'].'/'.$media['track-count'].', '.self::time2sec($media['track'][0]['length']);
+								}
+								$txt .= "<tr>";
+								$txt .= "<td>".$rel['title']."<br>".$m."</td>";
+		//						$txt .= "<td>".$rel['track-count']."</td>";
+								$txt .= "<td>".$rel['date']."</td>";
+								$txt .= "<td>".$rel['country']."</td>";
+								$txt .= "</tr>";
+							}
 						}
 					}
 					$txt .= "</table>";
