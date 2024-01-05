@@ -408,6 +408,24 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 					foreach($data['result']['musicbrainz'] as $item) {
 						foreach($item['releases'] as $rel) {
 							if($countries && (empty($rel['country']) || in_array($rel['country'], $countries))) {
+								$imgurl = '';
+								/*
+								$ch = curl_init();
+								curl_setopt($ch, CURLOPT_URL, 'https://coverartarchive.org/release/'.$rel['id'].'');
+								curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+								curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+								curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+								$result=curl_exec($ch);
+								$httpstatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+								curl_close ($ch);
+								if($httpstatus == '200') {
+									$data = json_decode($result, true);
+									foreach($data['images'] as $image) {
+										if($image['front'])
+											$imgurl = $image['thumbnails']['250'];
+									}
+								}
+								 */
 								$m = '';
 								if(!empty($rel['media'])) {
 									foreach($rel['media'] as $media)
@@ -415,7 +433,8 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 											$m = $media['format'].' ('.$media['position'].'), Track '.$media['track'][0]['number'].'/'.$media['track-count'].', '.self::time2sec($media['track'][0]['length']);
 								}
 								$txt .= "<tr>";
-								$txt .= "<td>".$rel['title']."<br>".$m."</td>";
+								$txt .= "<td>".($imgurl ? "<img width=\"100\" src=\"".$imgurl."\">" : "")."</td>";
+								$txt .= "<td><a href=\"https://musicbrainz.org/release/".$rel['id']."\" target=\"musicbrainz\">".$rel['title']."</a><br>".$m."</td>";
 		//						$txt .= "<td>".$rel['track-count']."</td>";
 								$txt .= "<td>".$rel['date']."</td>";
 								$txt .= "<td>".$rel['country']."</td>";
@@ -428,9 +447,9 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 			} else {
 				$txt .= 'Error';
 			}
-			$txt .= "<pre>";
-			$txt .= var_export($data, true);
-			$txt .= "</pre>";
+//			$txt .= "<pre>";
+//			$txt .= var_export($data, true);
+//			$txt .= "</pre>";
 
 			ob_start();
 			$view->printAccordion2(getMLText('audd'), $txt);
