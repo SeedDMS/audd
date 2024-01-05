@@ -334,11 +334,17 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 			if (!file_exists($tmpdir))
 				if (!SeedDMS_Core_File::makeDir($tmpdir)) return false;
 
-			$view->contentHeading('Audd');			
+			$iscached = false;
 			$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'.json';
 			if(!file_exists($datafile)) {
 				$mp3 = new PhpMp3($dms->contentDir . $content->getPath());
-				$mp3_1 = $mp3->extract(10,10);
+				$startsec = 30;
+				$numsecs = 10;
+				if(!empty($settings->_extensions['audd']['startsec']) && is_numeric($settings->_extensions['audd']['startsec']))
+					$startsec = (int) $settings->_extensions['audd']['startsec'];
+				if(!empty($settings->_extensions['audd']['numsecs']) && is_numeric($settings->_extensions['audd']['numsecs']))
+					$numsecs = (int) $settings->_extensions['audd']['numsecs'];
+				$mp3_1 = $mp3->extract($startsec, $numsecs);
 				$tmpfile = tempnam(sys_get_temp_dir(), 'audd');
 				$mp3_1->save($tmpfile);
 				$cFile = curl_file_create($tmpfile);
@@ -361,6 +367,7 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 						file_put_contents($datafile, $result);
 				}
 			} else {
+				$iscached = true;
 				$result = file_get_contents($datafile);
 				$data = json_decode($result, true);
 			}
@@ -388,10 +395,14 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 				$txt .= "<td><a target=\"_blank\" href=\"".$data['result']['song_link']."\">".$data['result']['song_link']."</a></td>";
 				$txt .= "</tr>";
 				$txt .= "</table>";
+				if($iscached) {
+					$txt .= "<p>".getMLText('audd_data_from_cache')."</p>";
+				}
 				if(isset($data['result']['spotify']['album']['images'])) {
-					$txt .= "<img src=\"".$data['result']['spotify']['album']['images'][0]['url']."\">";
+					$txt .= "<img title=\"".getMLText('audd_spotify_cover')."\" src=\"".$data['result']['spotify']['album']['images'][0]['url']."\">";
 				}
 				if(isset($data['result']['musicbrainz'])) {
+					$txt .= "<h4>Music Brainz Releases</h4>";
 					$countries = explode(',', $settings->_extensions['audd']['countries']);
 					$txt .= "<table class=\"table table-sm table-condensed\">";
 					foreach($data['result']['musicbrainz'] as $item) {
@@ -420,6 +431,10 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 			$txt .= "<pre>";
 			$txt .= var_export($data, true);
 			$txt .= "</pre>";
+
+			ob_start();
+			$view->printAccordion2(getMLText('audd'), $txt);
+			$txt = ob_get_clean();
 
 			return $txt;
 		} else {
