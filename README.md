@@ -28,3 +28,11 @@ sending a new request to Audd.io.
 
 If you have bought additional request you can set your API token in
 the configuration of the extension.
+
+## Lyrics from spotify
+
+The extension has limited suppport to retrieve lyrics from spotify,
+if you are able to login at spotify. Just copy the cookie value of
+`sp_dc` into the configuration variable `spotify cookie`. If you don't
+know to retrieve the cookie value, you will find a detailed guide at
+[https://github.com/akashrchandran/syrics/wiki/Finding-sp\_dc](https://github.com/akashrchandran/syrics/wiki/Finding-sp_dc)
