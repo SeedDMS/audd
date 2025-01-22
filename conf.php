@@ -31,9 +31,19 @@ $EXT_CONF['audd'] = array(
 			'allow_empty' => true,
 			'size' => 1,
 		),
+		'getlyrics' => array(
+			'title'=>'Lyrics',
+			'help'=>'Retrieve lyrics from spotify',
+			'type'=>'checkbox',
+		),
+		'spotify_cookie' => array(
+			'title'=>'spotify cookie',
+			'help'=>'Value of coolie sp_dc after you have logged in to spotify with a browser.',
+			'type'=>'input',
+		),
 	),
 	'constraints' => array(
-		'depends' => array('php' => '5.6.40-', 'seeddms' => ['5.1.24-5.1.99', '6.0.17-6.0.99']),
+		'depends' => array('php' => '5.6.40-', 'seeddms' => ['5.1.24-5.1.99', '6.0.17-6.0.99', '6.1.0-']),
 	),
 	'icon' => 'icon.svg',
 	'changelog' => 'changelog.md',

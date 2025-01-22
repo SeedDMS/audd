@@ -94,8 +94,10 @@ class SeedDMS_ExtAudd_ConversionServiceToPng extends SeedDMS_ConversionServiceBa
 	public function convert($infile, $target = null, $params = array()) { /* {{{ */
 		$start = microtime(true);
 
-		// Nasty hack to extract content from infile
+		// Nasty hack to extract content from infile. Does not work for files in userdir
 		$tmp = explode(DIRECTORY_SEPARATOR, substr($infile, strlen($this->dms->contentDir)));
+		if(count($tmp) != 2)
+			return false;
 		$docid = (int) $tmp[0];
 		$version = (int) strtok($tmp[1], '.');
 		if(!($document = $this->dms->getDocument($docid)))
@@ -260,6 +262,13 @@ class SeedDMS_ExtAudd_ConversionServiceToTxt extends SeedDMS_ConversionServiceBa
 			$data = json_decode($result, true);
 		}
 
+		$lyricsfile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'-lyrics.json';
+		$datalyrics = null;
+		if(file_exists($lyricsfile)) {
+			$response = file_get_contents($lyricsfile);
+			$datalyrics = json_decode($response, true);
+		}
+
 		$end = microtime(true);
 
 		if($this->logger) {
@@ -269,6 +278,12 @@ class SeedDMS_ExtAudd_ConversionServiceToTxt extends SeedDMS_ConversionServiceBa
 			$txt = $data['result']['artist']."\n";
 			$txt .= $data['result']['title']."\n";
 			$txt .= $data['result']['album']."\n";
+			if(!empty($datalyrics['lyrics'])) {
+				foreach($datalyrics['lyrics']['lines'] as $line) {
+					if($line['words'])
+						$txt .= $line['words']."\n";
+				}
+			}
 			$this->success = true;
 			if($target) {
 				return file_put_contents($target, $txt);
@@ -316,7 +331,7 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 		$l = round($l/1000);
 		$m = (int) ($l/60);
 		$s = (int) ($l%60);
-		return $m.':'.$s;
+		return sprintf('%02d:%02d', $m, $s);
 	} /* }}} */
 
 	/**
@@ -394,9 +409,13 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 				$txt .= "<td>".getMLText('audd_song_link')."</td>";
 				$txt .= "<td><a target=\"_blank\" href=\"".$data['result']['song_link']."\">".$data['result']['song_link']."</a></td>";
 				$txt .= "</tr>";
+				$txt .= "<tr>";
+				$txt .= "<td>".getMLText('audd_spotify_trackid')."</td>";
+				$txt .= "<td>".$data['result']['spotify']['id']."</td>";
+				$txt .= "</tr>";
 				$txt .= "</table>";
 				if($iscached) {
-					$txt .= "<p>".getMLText('audd_data_from_cache')."</p>";
+					$txt .= "<p>".getMLText('audd_data_from_cache')." ".$datafile."</p>";
 				}
 				if(isset($data['result']['spotify']['album']['images'])) {
 					$txt .= "<img title=\"".getMLText('audd_spotify_cover')."\" src=\"".$data['result']['spotify']['album']['images'][0]['url']."\">";
@@ -444,11 +463,48 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 					}
 					$txt .= "</table>";
 				}
+				if(!empty($settings->_extensions['audd']['getlyrics']) && !empty($settings->_extensions['audd']['spotify_cookie'])) {
+					if(isset($data['result']['spotify'])) {
+						require(__DIR__.'/vendor/autoload.php');
+						$lyricsfile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'-lyrics.json';
+						$datalyrics = null;
+						if(!file_exists($lyricsfile)) {
+							try {
+								$trackid = $data['result']['spotify']['id'];
+								$spotify = new SpotifyLyricsApi\Spotify($settings->_extensions['audd']['spotify_cookie']);
+								$spotify->checkTokenExpire();
+								$response = $spotify->getLyrics($trackid);
+								if($response) {
+									$datalyrics = json_decode($result, true);
+									if($datalyrics['error'] == false) {
+										file_put_contents($lyricsfile, $response);
+										$datalyrics = json_decode($response, true);
+									}
+								}
+							} catch(Exception $e) {
+								$txt .= "Error getting lyrics";
+							}
+						} else {
+							$response = file_get_contents($lyricsfile);
+							$datalyrics = json_decode($response, true);
+						}
+						if(!empty($datalyrics['lyrics'])) {
+							$txt .= "<h4>Lyrics</h4>";
+							foreach($datalyrics['lyrics']['lines'] as $line) {
+								if($line['words'])
+									$txt .= "[".$this->time2sec($line['startTimeMs'])."] ".$line['words']."<br />";
+							}
+//						$txt .= "<pre>";
+//						$txt .= var_export($datalyrics, true);
+//						$txt .= "</pre>";
+						}
+					}
+				}
 			} else {
 				$txt .= 'Error';
 			}
 //			$txt .= "<pre>";
-//			$txt .= var_export($data, true);
+//			$txt .= var_export($data['result']['spotify'], true);
 //			$txt .= "</pre>";
 
 			ob_start();
