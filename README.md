@@ -1,7 +1,7 @@
 # Extension for retrieving data from Audd.io
 
 Audd.io is a commercial service which recognizes songs based on parts
-of the audio file. This extensions extracts a couple of seconds from
+of the audio file. This extension extracts a couple of seconds from
 an mpg3 file stored in SeedDMS, sends it to audd.io and caches and
 evaluates the result. The returned data is used for
 
