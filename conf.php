@@ -4,7 +4,7 @@ $EXT_CONF['audd'] = array(
 	'description' => 'Extracts 10 seconds of an mp3 song, sends it to Audd.io and evaluates the result.',
 	'disable' => false,
 	'version' => '1.0.0',
-	'releasedate' => '2024-01-02',
+	'releasedate' => '2025-07-22',
 	'author' => array('name'=>'Uwe Steinmann', 'email'=>'uwe@steinmann.cx', 'company'=>'MMK GmbH'),
 	'config' => array(
 		'apitoken' => array(
