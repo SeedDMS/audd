@@ -105,11 +105,11 @@ class SeedDMS_ExtAudd_ConversionServiceToPng extends SeedDMS_ConversionServiceBa
 		if(!($content = $document->getContentByVersion($version)))
 			return false;
 
-		$tmpdir = addDirSep($this->conf->_cacheDir).'audd';
+		$tmpdir = addDirSep($this->conf->_cacheDir).'audd'.DIRECTORY_SEPARATOR.$document->getId();
 		if (!file_exists($tmpdir))
 			if (!SeedDMS_Core_File::makeDir($tmpdir)) return false;
 
-		$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'.json';
+		$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getVersion().'.json';
 		if(!file_exists($datafile)) {
 			/* Conversion service does not get missing data from Audd.io
 			 * because the number of free requests is very limited.
@@ -221,11 +221,11 @@ class SeedDMS_ExtAudd_ConversionServiceToTxt extends SeedDMS_ConversionServiceBa
 		if(!($content = $document->getContentByVersion($version)))
 			return false;
 
-		$tmpdir = addDirSep($this->conf->_cacheDir).'audd';
+		$tmpdir = addDirSep($this->conf->_cacheDir).'audd'.DIRECTORY_SEPARATOR.$document->getId();
 		if (!file_exists($tmpdir))
 			if (!SeedDMS_Core_File::makeDir($tmpdir)) return false;
 
-		$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'.json';
+		$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getVersion().'.json';
 		if(!file_exists($datafile)) {
 			/* Conversion service does not get missing data from Audd.io
 			 * because the number of free requests is very limited.
@@ -262,7 +262,7 @@ class SeedDMS_ExtAudd_ConversionServiceToTxt extends SeedDMS_ConversionServiceBa
 			$data = json_decode($result, true);
 		}
 
-		$lyricsfile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'-lyrics.json';
+		$lyricsfile = $tmpdir.DIRECTORY_SEPARATOR.$content->getVersion().'-lyrics.json';
 		$datalyrics = null;
 		if(file_exists($lyricsfile)) {
 			$response = file_get_contents($lyricsfile);
@@ -345,12 +345,12 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 		if($content->getMimeType() == 'audio/mpeg') {
 			$txt = '';
 
-			$tmpdir = addDirSep($settings->_cacheDir).'audd';
+			$tmpdir = addDirSep($settings->_cacheDir).'audd'.DIRECTORY_SEPARATOR.$document->getId();
 			if (!file_exists($tmpdir))
 				if (!SeedDMS_Core_File::makeDir($tmpdir)) return false;
 
 			$iscached = false;
-			$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'.json';
+			$datafile = $tmpdir.DIRECTORY_SEPARATOR.$content->getVersion().'.json';
 			if(!file_exists($datafile)) {
 				$mp3 = new PhpMp3($dms->contentDir . $content->getPath());
 				$startsec = 30;
@@ -466,7 +466,7 @@ class SeedDMS_ExtAudd_DocumentPreview { /* {{{ */
 				if(!empty($settings->_extensions['audd']['getlyrics']) && !empty($settings->_extensions['audd']['spotify_cookie'])) {
 					if(isset($data['result']['spotify'])) {
 						require(__DIR__.'/vendor/autoload.php');
-						$lyricsfile = $tmpdir.DIRECTORY_SEPARATOR.$content->getId().'-lyrics.json';
+						$lyricsfile = $tmpdir.DIRECTORY_SEPARATOR.$document->getId().DIRECTORY_SEPARATOR.$content->getVersion().'-lyrics.json';
 						$datalyrics = null;
 						if(!file_exists($lyricsfile)) {
 							try {
